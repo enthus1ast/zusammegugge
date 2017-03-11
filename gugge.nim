@@ -124,7 +124,7 @@ proc processClientWebsocket(req: Request) {.async.} =
     node.nodeid = random(1000000)
     clients.incl node
   
-    await req.client.sendText("""{"serverTime": $1}""" % [ ($((epochTime()))).replace(".","") ], false)
+    await req.client.sendText("""{"serverTime": $1}""" % [ ($((epochTime()))).replace(".","")[0..^4] ], false)
     # await req.client.sendText(($(epochTime())).replace(".",""), false)
     
     try:
