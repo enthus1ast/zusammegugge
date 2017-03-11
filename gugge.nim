@@ -124,8 +124,8 @@ proc processClientWebsocket(req: Request) {.async.} =
     node.nodeid = random(1000000)
     clients.incl node
   
-    await req.client.sendText("""{"serverTime": $1}""" % [ $((epochTime()).int) ], false)
-    # await req.client.sendText(($(epochTime())).sreplace(".",""), false)
+    await req.client.sendText("""{"serverTime": $1}""" % [ ($((epochTime()))).replace(".","") ], false)
+    # await req.client.sendText(($(epochTime())).replace(".",""), false)
     
     try:
       asyncCheck pump(req)
