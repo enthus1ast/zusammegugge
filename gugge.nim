@@ -123,15 +123,16 @@ proc processClientWebsocket(req: Request) {.async.} =
     node.socket = req.client
     node.nodeid = random(1000000)
     clients.incl node
-    
-    # await req.client.sendText("""{"serverTime": "$1"}""" % [ $((epochTime()).int) ], false)
-    await req.client.sendText(($(epochTime())).replace(".",""), false)
+  
+    await req.client.sendText("""{"serverTime": "$1"}""" % [ $((epochTime()).int) ], false)
+    # await req.client.sendText(($(epochTime())).sreplace(".",""), false)
     
     try:
       asyncCheck pump(req)
       discard
     except:
       echo "Could not connect to endpoint :("
+
       asyncCheck req.client.sendText(":( :( :( :( :(\n",false)
       echo "Closeing ws and tcp socket after error..."
       req.client.close()
