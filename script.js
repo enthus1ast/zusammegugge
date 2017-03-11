@@ -7,8 +7,7 @@ window.nomesync = false;
 window.noremotesync = false;
 
 var client = new WebSocket(window.host, "irc");
-var servertime = 0;
-var servertimeoffset = 0;
+
 
 window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
   currentSrc = currentSrc || video.currentSrc;
@@ -23,7 +22,7 @@ window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, 
 
       var data = JSON.stringify({
         currentSrc: currentSrc,
-        currentTime: currentTime + (servertimeoffset / 1000),
+        currentTime: currentTime,
         paused: paused,
         ended: ended,
         seeking: seeking,
@@ -104,10 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
   client.onopen = function(event) {
     client.onmessage = function( event ) {
       console.log(event);
-      if ( event.data.servertime !== undefined && event.data.servertime !== null ) {
-        servertime = event.data.servertime;
-        servertimeoffset = (new Date).getTime() - event.data.servertime;
-      }
       syncMe(event);
     }
   }
