@@ -18,6 +18,7 @@ import cgi
 import sets
 import random
 import hashes
+import times
 
 randomize()
 
@@ -122,6 +123,10 @@ proc processClientWebsocket(req: Request) {.async.} =
     node.socket = req.client
     node.nodeid = random(1000000)
     clients.incl node
+    
+    # await req.client.sendText("""{"serverTime": "$1"}""" % [ $((epochTime()).int) ], false)
+    await req.client.sendText(($(epochTime())).replace(".",""), false)
+    
     try:
       asyncCheck pump(req)
       discard
