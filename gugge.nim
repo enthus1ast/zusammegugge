@@ -81,28 +81,41 @@ proc pump(req: Request): Future[void] {.async.} =
 proc processClientWebsocket(req: Request) {.async.} =
   let (success, error) = await(verifyWebsocketRequest(req, "irc"))
   if not success:
-    when defined Windows: # bug...
-      if req.url.path == "/":
-        asyncCheck req.respond(Http200, readFile(  expandFilename(getCurrentDir() / "index.html")))
-      else:  
-        let fullPath = expandFilename(getCurrentDir() / req.url.path)
+    var 
+        pathBuf = ""
+        fullPath = ""
+        content = ""
+        failLater = false
 
-        if fullPath.fileExists:
-          asyncCheck req.respond(Http200, readFile(fullPath) )
-        else:
+    if req.url.path == "/":
+      pathBuf = getCurrentDir() / "index.html"
+    else:  
+      pathBuf = getCurrentDir() / req.url.path
+
+    try:
+      fullPath = expandFilename(pathBuf)
+    except:
+      echo getCurrentExceptionMsg()
+      failLater = true
+
+    try: 
+      content = readFile(fullPath)
+    except:
+      echo getCurrentExceptionMsg()
+      failLater = true
+
+    if not fullPath.fileExists and not failLater:
+      when defined Windows: # bug...?
           asyncCheck req.respond(Http404, fullPath & " not found :/" )
+      else:
+          await req.respond(Http404, fullPath & " not found :/" )        
+
+    when defined Windows: # bug...?
+      asyncCheck req.respond(Http200, content )    
     else:
-      if req.url.path == "/":
-        await req.respond(Http200, readFile(  expandFilename(getCurrentDir() / "index.html")))
-      else:  
-        let fullPath = expandFilename(getCurrentDir() / req.url.path)
+      await req.respond(Http200, content )   
 
-        if fullPath.fileExists:
-          await req.respond(Http200, readFile(fullPath) )
-        else:
-          await req.respond(Http404, fullPath & " not found :/" )
-
-    req.client.close()
+    # req.client.close() ? 
   else:
     echo "New websocket customer arrived!"
     var node = Node()
