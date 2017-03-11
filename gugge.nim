@@ -67,7 +67,7 @@ proc pump(req: Request): Future[void] {.async.} =
       fromWs = await req.client.readData(false)
       echo "ws: " & fromWs.data
     except:
-      req.client.close()
+      #req.client.close()
       return
     for each in clients.items:
       if req.client == each.socket:
@@ -75,7 +75,7 @@ proc pump(req: Request): Future[void] {.async.} =
       try:
         await each.socket.sendText(fromWs.data,false)
       except:
-        each.socket.close
+        #each.socket.close
         clients.excl each
 
 proc processClientWebsocket(req: Request) {.async.} =

@@ -7,23 +7,27 @@ window.nomesync = false;
 window.noremotesync = false;
 
 var client = new WebSocket(window.host, "irc");
+var servertime = 0;
+var servertimeoffset = 0;
 
-window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking ) {
+window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
   currentSrc = currentSrc || video.currentSrc;
   currentTime = currentTime || video.currentTime;
   paused = paused || video.paused;
   ended = ended || video.ended;
   seeking = seeking || video.seeking;
+  hardsync = hardsync || false;
 
   if ( window.noremotesync.checked === false ) {
     if ( window.voice.checked === true ) {
 
       var data = JSON.stringify({
         currentSrc: currentSrc,
-        currentTime: currentTime,
+        currentTime: currentTime + (servertimeoffset / 1000),
         paused: paused,
         ended: ended,
         seeking: seeking,
+        hardsync: hardsync
       });
 
       client.send(data); 
@@ -54,7 +58,8 @@ window.syncMe = function(event) {
         }
       }
 
-      if ( data.seeking === true || Math.abs(window.video.currentTime - data.currentTime) >= MAX_TIME_DIFFERENCE ) {
+      if ( data.seeking === true || data.hardsync === true || Math.abs(window.video.currentTime - data.currentTime) >= MAX_TIME_DIFFERENCE ) {
+        console.log('- syncMe (DEBUG): hardsynced!')
         window.video.currentTime = data.currentTime;
         return;
       }
@@ -96,16 +101,27 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 5000);
 
 
-  client.onopen = function() {
+  client.onopen = function(event) {
     client.onmessage = function( event ) {
       console.log(event);
+      if ( event.data.servertime !== undefined && event.data.servertime !== null ) {
+        servertime = event.data.servertime;
+        servertimeoffset = (new Date).getTime() - event.data.servertime;
+      }
       syncMe(event);
     }
   }
 
 
   window.video.onseeking = function() {
-    window.syncRemote();
+    window.syncRemote(
+      currentSrc = null,
+      currentTime = null,
+      paused = null,
+      ended = null,
+      seeking = null,
+      hardsync = true
+    );
   }
 
 
@@ -115,7 +131,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   window.video.onpause = function() {
-    window.syncRemote();
+    window.syncRemote(
+      currentSrc = null,
+      currentTime = null,
+      paused = null,
+      ended = null,
+      seeking = null,
+      hardsync = true
+    );
   }
 
 
