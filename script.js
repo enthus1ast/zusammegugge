@@ -98,8 +98,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
   client.onopen = function(event) {
     client.onmessage = function( event ) {
-      console.log(event);
-      syncMe(event);
+      if (event.data[0] === "{") {
+        syncMe(event);
+      } else {
+        //TODO: Pong from server
+        console.log("Pong: ", event.data);
+      }
     }
   }
 
