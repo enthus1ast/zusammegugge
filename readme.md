@@ -14,4 +14,4 @@ Inspired by the desire to watch movies together on a couch (withouth moveing too
 
 It is good enough to watch startrek :)
 
-![zusammegugge](/guggeInAction.jpg?raw=true "zusammegugge")
+![zusammegugge](/guggeInAction.jpeg?raw=true "zusammegugge")
