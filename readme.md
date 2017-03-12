@@ -8,10 +8,11 @@ Inspired by the desire to watch movies together on a couch (without moveing too 
 * Set no me sync, to forbid other client's to control your video.
 
 ## For better zusamme gugge experience
-* you should seek with your mousepointer to the desired location
+* seek with your mousepointer to the desired location
 * wait a moment
-* then release your mousebutton. 
+* release your mousebutton. 
+* enjoy "perfect" syncronisation ;)
 
-It is good enough to watch startrek :)
+It's good enough to watch startrek :)
 
 ![zusammegugge](/guggeInAction.jpeg?raw=true "zusammegugge")
