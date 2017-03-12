@@ -18,6 +18,7 @@ import cgi
 import sets
 import random
 import hashes
+import json
 
 randomize()
 
@@ -65,10 +66,18 @@ proc pump(req: Request): Future[void] {.async.} =
   while true:
     try:
       fromWs = await req.client.readData(false)
-      echo "ws: " & fromWs.data
+      when not defined release:
+        echo "ws: " & fromWs.data
     except:
       #req.client.close()
       return
+
+    if fromWs.data.len != 0:
+      if fromWs.data[0] != '{':
+        ## this is a ping
+        await req.client.sendText(fromWs.data, false)
+        continue
+
     for each in clients.items:
       if req.client == each.socket:
         continue 
