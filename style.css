@@ -1,3 +1,69 @@
+body {
+  margin: 0px;
+  font-size: 14px;
+  background-color: darkslategray;
+  color: white;
+  font-family: monospace;
+}
+
 #video {
-  max-width: 100%;
+  width: 100vw;
+  height: calc(100vh - 53px);
+  background-color: black;
+  float: left;
+}
+
+.clear-both {
+  clear: both;
+}
+
+button {
+    border: none;
+    border-right: 1px solid gray;
+    background: black;
+    color: white;	
+    line-height: 20px;
+}
+
+input[type="text"] {
+    border: none;
+    background: black;
+    color: gray;
+    font-size: 16px;
+    line-height: 20px;
+    width: 400px;
+}
+
+/*table thead tr th, table thead tr td {
+  padding: 0;
+}*/
+
+video::-webkit-media-controls-panel {
+    background-color: #161618;
+}
+
+video::-webkit-media-controls-volume-slider-container {
+    background-color: cyan;
+}
+
+video::-webkit-media-controls-volume-slider {
+    background-color: #1FB2B0;
+}
+
+video::-webkit-media-controls-timeline {
+    background-color: #1FB2B0;
+}
+
+#controls {
+    background-color: #161618;
+    border-color: cornsilk;
+}
+
+#controls table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#controls table tbody input[type="checkbox"] {
+  vertical-align: middle;
 }

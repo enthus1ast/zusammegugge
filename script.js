@@ -4,7 +4,6 @@ window.host = "ws://" + location.hostname + ":7787/";
 window.video = null;
 window.voice = false;
 window.nomesync = false;
-window.noremotesync = false;
 
 var client = new WebSocket(window.host, "irc");
 
@@ -17,21 +16,19 @@ window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, 
   seeking = seeking || video.seeking;
   hardsync = hardsync || false;
 
-  if ( window.noremotesync.checked === false ) {
-    if ( window.voice.checked === true ) {
+  if ( window.voice.checked === true ) {
 
-      var data = JSON.stringify({
-        currentSrc: currentSrc,
-        currentTime: currentTime,
-        paused: paused,
-        ended: ended,
-        seeking: seeking,
-        hardsync: hardsync
-      });
+    var data = JSON.stringify({
+      currentSrc: currentSrc,
+      currentTime: currentTime,
+      paused: paused,
+      ended: ended,
+      seeking: seeking,
+      hardsync: hardsync
+    });
 
-      client.send(data); 
+    client.send(data); 
 
-    }
   }
 }
 
@@ -58,13 +55,13 @@ window.syncMe = function(event) {
       }
 
       if ( data.seeking === true || data.hardsync === true || Math.abs(window.video.currentTime - data.currentTime) >= MAX_TIME_DIFFERENCE ) {
-        console.log('- syncMe (DEBUG): hardsynced!')
+        console.log("- syncMe (DEBUG): hardsynced!")
         window.video.currentTime = data.currentTime;
         return;
       }
 
       if ( data.ended === true ) {
-        console.log('VIDEO ENDED');
+        console.log("VIDEO ENDED");
       }
     }
 
@@ -84,13 +81,12 @@ window.setSource = function() {
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
-  window.video = document.querySelector('#video');
-  window.source = document.querySelector('#source');
-  window.voice = document.querySelector('#voice');
-  window.noremotesync = document.querySelector('#noremotesync');
-  window.nomesync = document.querySelector('#nomesync');
-  window.set = document.querySelector('#set');
+document.addEventListener("DOMContentLoaded", function() {
+  window.video = document.querySelector("#video");
+  window.source = document.querySelector("#source");
+  window.voice = document.querySelector("#voice");
+  window.nomesync = document.querySelector("#nomesync");
+  window.set = document.querySelector("#set");
 
   video.src = source.value;
 
@@ -143,6 +139,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     else {
       window.video.pause();
+    }
+  }
+
+  /*var elements = Object.keys(document.querySelectorAll("*"));
+  for ( var key of elements) {
+    var element = elements[key];
+    if ( element.type !== "text" ) {
+      console.log('asdasdasd')
+      element.onkeyup = function(event) {
+        switch ( event.key.toUpperCase() ) {
+          case "F":
+            if ( video.webkitDisplayingFullscreen === false ) {
+              video.webkitRequestFullscreen();
+            }
+            else {
+              video.webkitExitFullscreen();
+            }
+        }
+      }
+    }
+  }*/
+
+  document.body.onkeyup = function(event) {
+    switch ( event.key.toUpperCase() ) {
+      case "F":
+        if ( document.activeElement.type !== "text" ) {
+          if ( video.webkitDisplayingFullscreen === false ) {
+            video.webkitRequestFullscreen();
+          }
+          else {
+            video.webkitExitFullscreen();
+          }
+        }
     }
   }
 

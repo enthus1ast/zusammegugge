@@ -8,38 +8,26 @@
   <body>
     <video id="video" controls></video>
 
-    <h1>Controls</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Control</th>
-          <th>Additional</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><label for="source">Source</label></td>
-          <td><input id="source" type="input" value="http://vid.pr0gramm.com/2016/11/11/84246c56f6e8b37f.mp4"></td>
-          <td><button id="set">Set</button></td>
-        </tr>
-        <tr>
-          <td><label for="voice">Voice</label></td>
-          <td><input id="voice" type="checkbox"></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><label for="noremotesync">No remote sync</label></td>
-          <td><input id="noremotesync" type="checkbox"></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><label for="nomesync">No me sync</label></td>
-          <td><input id="nomesync" type="checkbox"></td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="clear-both"></div>
+
+    <div id="controls">
+      <table>
+        <thead>
+        </thead>
+        <tbody>
+          <tr>
+            <td><label for="source">Source</label></td>
+            <td><input id="source" type="text" value="http://vid.pr0gramm.com/2016/11/11/84246c56f6e8b37f.mp4"></td>
+            <td><button id="set">Set</button></td>
+          </tr>
+          <tr>
+            <td><label for="voice">Voice</label><input id="voice" type="checkbox"></td>
+            <td><label for="nomesync">No me sync</label><input id="nomesync" type="checkbox"></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
 
     <script type="text/javascript" src="script.js"></script>
