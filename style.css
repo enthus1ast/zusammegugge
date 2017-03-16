@@ -45,7 +45,7 @@ video::-webkit-media-controls-timeline {
 
 #video {
   width: 100vw;
-  height: calc(100vh - 53px);
+  height: calc(100vh - 64px);
   background-color: black;
   float: left;
 }
