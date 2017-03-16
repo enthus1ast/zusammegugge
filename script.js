@@ -1,14 +1,13 @@
-const MAX_TIME_DIFFERENCE = 0.800;
+let host = "ws://" + location.hostname + ":7787/";
+let video = null;
+let voice = false;
+let nomesync = false;
+let timedifference = false;
 
-window.host = "ws://" + location.hostname + ":7787/";
-window.video = null;
-window.voice = false;
-window.nomesync = false;
-
-var client = new WebSocket(window.host, "irc");
+let client = new WebSocket(host, "irc");
 
 
-window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
+syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
   currentSrc = currentSrc || video.currentSrc;
   currentTime = currentTime || video.currentTime;
   paused = paused || video.paused;
@@ -16,9 +15,9 @@ window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, 
   seeking = seeking || video.seeking;
   hardsync = hardsync || false;
 
-  if ( window.voice.checked === true ) {
+  if ( voice.checked === true ) {
 
-    var data = JSON.stringify({
+    let data = JSON.stringify({
       currentSrc: currentSrc,
       currentTime: currentTime,
       paused: paused,
@@ -34,65 +33,61 @@ window.syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, 
 
 
 
-window.syncMe = function(event) {
-//  try {
-    if ( window.nomesync.checked === false ) {
-      var data = JSON.parse(event.data);
+syncMe = function(event) {
+  if ( nomesync.checked === false ) {
+    let data = JSON.parse(event.data);
 
-      window.voice.checked = false;
+    voice.checked = false;
 
-      if ( window.video.src !== data.currentSrc ) {
-        window.video.src = data.currentSrc;
+    if ( video.src !== data.currentSrc ) {
+      video.src = data.currentSrc;
+    }
+
+    if ( video.paused !== data.paused ) {
+      if ( data.paused === true ) {
+        video.pause()
       }
-
-      if ( window.video.paused !== data.paused ) {
-        if ( data.paused === true ) {
-          window.video.pause()
-        }
-        else {
-          window.video.play()
-        }
-      }
-
-      if ( data.seeking === true || data.hardsync === true || Math.abs(window.video.currentTime - data.currentTime) >= MAX_TIME_DIFFERENCE ) {
-        console.log("- syncMe (DEBUG): hardsynced!")
-        window.video.currentTime = data.currentTime;
-        return;
-      }
-
-      if ( data.ended === true ) {
-        console.log("VIDEO ENDED");
+      else {
+        video.play()
       }
     }
 
-    return;
-  //}
-  //catch (error) {
-//    return;
-  //}
+    if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= timedifference.value ) {
+      console.log("- syncMe (DEBUG): hardsynced!")
+      video.currentTime = data.currentTime;
+      return;
+    }
+
+    if ( data.ended === true ) {
+      console.log("VIDEO ENDED");
+    }
+  }
+
+  return;
 }
 
 
 
 
-window.setSource = function() {
-  window.video.src = window.source.value;
+setSource = function() {
+  video.src = source.value;
 }
 
 
 
 document.addEventListener("DOMContentLoaded", function() {
-  window.video = document.querySelector("#video");
-  window.source = document.querySelector("#source");
-  window.voice = document.querySelector("#voice");
-  window.nomesync = document.querySelector("#nomesync");
-  window.set = document.querySelector("#set");
+  video = document.querySelector("#video");
+  source = document.querySelector("#source");
+  voice = document.querySelector("#voice");
+  nomesync = document.querySelector("#nomesync");
+  set = document.querySelector("#set");
+  timedifference = document.querySelector("#timedifference");
 
   video.src = source.value;
 
 
-  var syncInterval = setInterval(function() {
-    window.syncRemote();
+  let syncInterval = setInterval(function() {
+    syncRemote();
   }, 5000);
 
 
@@ -108,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  window.video.onseeking = function() {
-    window.syncRemote(
+  video.onseeking = function() {
+    syncRemote(
       currentSrc = null,
       currentTime = null,
       paused = null,
@@ -120,13 +115,13 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  window.video.onplay = function() {
-    window.syncRemote();
+  video.onplay = function() {
+    syncRemote();
   }
 
 
-  window.video.onpause = function() {
-    window.syncRemote(
+  video.onpause = function() {
+    syncRemote(
       currentSrc = null,
       currentTime = null,
       paused = null,
@@ -137,18 +132,18 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  window.video.onclick = function() {
+  video.onclick = function() {
     if ( video.paused === true ) {
-      window.video.play();
+      video.play();
     }
     else {
-      window.video.pause();
+      video.pause();
     }
   }
 
-  /*var elements = Object.keys(document.querySelectorAll("*"));
-  for ( var key of elements) {
-    var element = elements[key];
+  /*let elements = Object.keys(document.querySelectorAll("*"));
+  for ( let key of elements) {
+    let element = elements[key];
     if ( element.type !== "text" ) {
       console.log('asdasdasd')
       element.onkeyup = function(event) {
@@ -180,18 +175,18 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  window.source.onkeyup = function(event) {
+  source.onkeyup = function(event) {
     if ( event.keyCode === 13 ) {
-      window.setSource();
-      window.syncRemote(window.source.value);
+      setSource();
+      syncRemote(source.value);
       video.play();
     }
   }
 
 
-  window.set.onclick = function() {
-    window.setSource();
-    window.syncRemote(window.source.value);
+  set.onclick = function() {
+    setSource();
+    syncRemote(source.value);
     video.play(); 
   }
 
