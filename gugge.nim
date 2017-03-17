@@ -19,6 +19,7 @@ import sets
 import random
 import hashes
 import json
+import times
 
 randomize()
 
@@ -75,7 +76,8 @@ proc pump(req: Request): Future[void] {.async.} =
     if fromWs.data.len != 0:
       if fromWs.data[0] != '{':
         ## this is a ping
-        await req.client.sendText(fromWs.data, false)
+        # await req.client.sendText(fromWs.data, false)
+        await req.client.sendText(fromWs.data & "|" & ($((epochTime()))).replace(".","")[0..12],false)
         continue
 
     for each in clients.items:

@@ -1,5 +1,5 @@
 const SYNC_INTERVAL = 5000;
-const PING_INTERVAL = 5000;
+const TICK_SERVER_TIME_INTERVAL = 1000;
 const DEBUG = true;
 const HOST = "ws://" + location.hostname + ":7787/";
 
@@ -16,8 +16,8 @@ let chbxLagCompensation = null;
 
 
 let client = new WebSocket(HOST, "irc");
-let lag = 0;
-let lagQueue = [];
+let timestampDiff = null;
+let timestampDiffSign = "";
 
 
 let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
@@ -30,6 +30,15 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
   if ( chbxVoice.checked === true ) {
 
+    let timestamp = new Date().getTime();
+
+    if ( timestampDiffSign === "+" ) {
+      timestamp += timestampDiff;
+    }
+    else {
+      timestamp -= timestampDiff;
+    }
+
     let data = JSON.stringify({
       currentSrc: currentSrc,
       currentTime: currentTime,
@@ -37,7 +46,7 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
       ended: ended,
       seeking: seeking,
       hardsync: hardsync,
-      lag: lag
+      timestamp: timestamp
     });
 
     client.send(data); 
@@ -69,7 +78,16 @@ let syncMe = function(data) {
 
     if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value ) {
       if ( chbxLagCompensation.checked === true ) {
-        video.currentTime = data.currentTime + ( (data.lag + lag) / 1000 );
+        let serverTimestamp = null;
+
+        if ( timestampDiffSign === "+" ) {
+          serverTimestamp += new Date().getTime() + timestampDiff;
+        }
+        else {
+          serverTimestamp += new Date().getTime() - timestampDiff;
+        }
+
+        video.currentTime = data.currentTime + ( (serverTimestamp - data.timestamp) / 1000 );
       }
       else {
         video.currentTime = data.currentTime;
@@ -100,31 +118,20 @@ let ping = function() {
   }
 }
 
-let compensateLag = function(data) {
-  if ( lagQueue.length <= 10 ) {
-    lagQueue.push({"sent": data, "got": new Date().getTime()});
-   
-    if ( DEBUG === true ) {
-      console.log("- lagCompensation, pushedDifference (DEBUG): ~", new Date().getTime() - data);
-    }
+let setTimestampDiff = function(data) {
+  let clientTimestamp = parseInt(data.split("|")[0], 10),
+      latency = Date.Now().getTime() - clientTimestamp,
+      serverTimestamp = parseInt(data.split("|")[1], 10),
+
+  if ( clientTimestamp > serverTimestamp ) {
+    timestampDiff = serverTimestamp - clientTimestamp - latency;
+    timestampDiffSign = "-";
   }
   else {
-    let sum = 0;
-    for ( let key in Object.keys(lagQueue) ) {
-      let entry = lagQueue[key];
-      sum += entry.got - entry.sent;
-
-      if ( DEBUG === true ) {
-        console.log("- lagCompensation, calculated sum (DEBUG): ~", sum);
-      }
-    }
-    lag = sum / lagQueue.length;
-    lagQueue = [];
-
-    if ( DEBUG === true ) {
-      console.log("- lagCompensation, set lag (DEBUG): ~", lag);
-    }
+    timestampDiff = clientTimestamp - serverTimestamp - latency;
+    timestampDiffSign = "+";
   }
+
 }
 
 
@@ -181,20 +188,17 @@ document.addEventListener("DOMContentLoaded", function() {
     syncRemote();
   }, SYNC_INTERVAL);
 
-  let pingInterval = setInterval(function() {
-    ping();
-  }, PING_INTERVAL);
-
 
   client.onopen = function(event) {
     client.onmessage = function( event ) {
       if (event.data[0] === "{") {
         syncMe(event.data);
       } else {
+        setTimestampDiff(event.data);
         if ( DEBUG === true ) {
           console.log("- pong (DEBUG): ", new Date().getTime());
+          console.log("- pong, data (DEBUG): ", event.data);
         }
-        compensateLag(event.data);
       }
     }
   }
