@@ -67,3 +67,22 @@ video::-webkit-media-controls-timeline {
 #txtTimeDifference {
   width: 50px;
 }
+
+#divHistory {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 75vw;
+  background-color: green;
+}
+
+#tblHistory {
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+#tblHistory tbody tr td {
+    border-bottom: 1px solid #161618;
+}

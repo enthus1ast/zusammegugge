@@ -4,6 +4,8 @@ const DEBUG = true;
 const HOST = "ws://" + location.hostname + ":7787/";
 
 let video = null;
+let divHistory = null;
+let tblHistory = null;
 let txtSource = null;
 let chbxVoice = null;
 let chbxNoMeSync = null;
@@ -15,7 +17,6 @@ let chbxLagCompensation = null;
 let client = new WebSocket(HOST, "irc");
 let lag = 0;
 let lagQueue = [];
-
 
 
 let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
@@ -53,6 +54,7 @@ let syncMe = function(data) {
 
     if ( video.src !== data.currentSrc ) {
       video.src = data.currentSrc;
+      addToHistory(data.currentSrc);
     }
 
     if ( video.paused !== data.paused ) {
@@ -66,7 +68,7 @@ let syncMe = function(data) {
 
     if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value ) {
       if ( chbxLagCompensation.checked === true ) {
-        video.currentSrc = data.currentTime + ( (data.lag + lag) / 1000 );
+        video.currentTime = data.currentTime + ( (data.lag + lag) / 1000 );
       }
       else {
         video.currentTime = data.currentTime;
@@ -150,9 +152,19 @@ let toggleVideoFullscreen = function() {
 }
 
 
+let addToHistory = function(url) {
+  let tr = document.createElement("tr");
+  let td = document.createElement("td");
+  td.textContent = url;
+  tr.append(td);
+  tblHistory.tBodies[0].append(tr);
+}
+
 
 document.addEventListener("DOMContentLoaded", function() {
   video = document.querySelector("#video");
+  divHistory = document.querySelector("#divHistory");
+  tblHistory = document.querySelector("#tblHistory");
   txtSource = document.querySelector("#txtSource");
   chbxVoice = document.querySelector("#chbxVoice");
   chbxNoMeSync = document.querySelector("#chbxNoMeSync");
@@ -178,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function() {
         syncMe(event.data);
       } else {
         if ( DEBUG === true ) {
-          console.log("- pong: ", new Date().getTime());
+          console.log("- pong (DEBUG): ", new Date().getTime());
         }
         compensateLag(event.data);
       }
@@ -249,6 +261,7 @@ document.addEventListener("DOMContentLoaded", function() {
   txtSource.onkeyup = function(event) {
     if ( event.keyCode === 13 ) {
       setSource();
+      addToHistory(txtSource.value);
       syncRemote(
         currentSrc = txtSource.value
       );
@@ -259,6 +272,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   btnSetSource.onclick = function() {
     setSource();
+    addToHistory(txtSource.value);
     syncRemote(
       currentSrc = txtSource.value
     );
