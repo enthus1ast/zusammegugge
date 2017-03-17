@@ -17,7 +17,6 @@ let chbxLagCompensation = null;
 
 let client = new WebSocket(HOST, "irc");
 let timestampDiff = null;
-let timestampDiffSign = "";
 
 
 let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
@@ -30,14 +29,7 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
   if ( chbxVoice.checked === true ) {
 
-    let timestamp = new Date().getTime();
-
-    if ( timestampDiffSign === "+" ) {
-      timestamp += timestampDiff;
-    }
-    else {
-      timestamp -= timestampDiff;
-    }
+    let timestamp = new Date().getTime() + timestampDiff;
 
     let data = JSON.stringify({
       currentSrc: currentSrc,
@@ -80,12 +72,7 @@ let syncMe = function(data) {
       if ( chbxLagCompensation.checked === true ) {
         let serverTimestamp = null;
 
-        if ( timestampDiffSign === "+" ) {
-          serverTimestamp += new Date().getTime() + timestampDiff;
-        }
-        else {
-          serverTimestamp += new Date().getTime() - timestampDiff;
-        }
+        serverTimestamp += new Date().getTime() + timestampDiff;
 
         video.currentTime = data.currentTime + ( (serverTimestamp - data.timestamp) / 1000 );
       }
@@ -119,17 +106,25 @@ let ping = function() {
 }
 
 let setTimestampDiff = function(data) {
-  let clientTimestamp = parseInt(data.split("|")[0], 10),
-      latency = Date.Now().getTime() - clientTimestamp,
-      serverTimestamp = parseInt(data.split("|")[1], 10),
+  let latency = new Date().getTime(),
+      clientTimestamp = parseInt(data.split("|")[0], 10),
+      serverTimestamp = parseInt(data.split("|")[1], 10);
+
+  latency -= clientTimestamp;
 
   if ( clientTimestamp > serverTimestamp ) {
-    timestampDiff = serverTimestamp - clientTimestamp - latency;
-    timestampDiffSign = "-";
+    timestampDiff = (serverTimestamp + latency / 2) - (clientTimestamp - latency / 2);
   }
   else {
-    timestampDiff = clientTimestamp - serverTimestamp - latency;
-    timestampDiffSign = "+";
+    timestampDiff = (clientTimestamp + latency / 2) - (serverTimestamp - latency / 2);
+    timestampDiff *= -1;
+  }
+
+  if ( DEBUG === true ) {
+    console.log("- setTimestampDiff, clientTimestamp: ", clientTimestamp);
+    console.log("- setTimestampDiff, latency: ", latency);
+    console.log("- setTimestampDiff, serverTimestamp: ", serverTimestamp);
+    console.log("- setTimestampDiff, timestampDiff: ", timestampDiff);
   }
 
 }
@@ -184,12 +179,15 @@ document.addEventListener("DOMContentLoaded", function() {
   video.src = txtSource.value;
 
 
-  let syncInterval = setInterval(function() {
-    syncRemote();
-  }, SYNC_INTERVAL);
 
 
   client.onopen = function(event) {
+    ping();
+    
+    let syncInterval = setInterval(function() {
+      syncRemote();
+    }, SYNC_INTERVAL);
+    
     client.onmessage = function( event ) {
       if (event.data[0] === "{") {
         syncMe(event.data);
