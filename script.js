@@ -1,5 +1,5 @@
 const SYNC_INTERVAL = 5000;
-const PING_INTERVAL = 500;
+const PING_INTERVAL = 5000;
 const DEBUG = true;
 const HOST = "ws://" + location.hostname + ":7787/";
 
@@ -45,9 +45,9 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
 
 
-let syncMe = function(event) {
+let syncMe = function(data) {
   if ( chbxNoMeSync.checked === false ) {
-    let data = JSON.parse(event.data);
+    let data = JSON.parse(data);
 
     chbxVoice.checked = false;
 
@@ -97,12 +97,12 @@ let ping = function() {
   }
 }
 
-let compensateLag = function(event) {
+let compensateLag = function(data) {
   if ( lagQueue.length <= 10 ) {
-    lagQueue.push({"sent": event.data, "got": new Date().getTime()});
+    lagQueue.push({"sent": data, "got": new Date().getTime()});
    
     if ( DEBUG === true ) {
-      console.log("- lagCompensation, pushedDifference (DEBUG): ~", new Date().getTime() - event.data);
+      console.log("- lagCompensation, pushedDifference (DEBUG): ~", new Date().getTime() - data);
     }
   }
   else {
@@ -127,6 +127,26 @@ let compensateLag = function(event) {
 
 let setSource = function() {
   video.src = txtSource.value;
+}
+
+let toggleVideoPlayPause = function() {
+  if ( video.paused === true ) {
+    video.play();
+  }
+  else {
+    video.pause();
+  }
+}
+
+let toggleVideoFullscreen = function() {
+  if ( document.activeElement.type !== "text" ) {
+    if ( video.webkitDisplayingFullscreen === false ) {
+      video.webkitRequestFullscreen();
+    }
+    else {
+      video.webkitExitFullscreen();
+    }
+  }
 }
 
 
@@ -155,12 +175,12 @@ document.addEventListener("DOMContentLoaded", function() {
   client.onopen = function(event) {
     client.onmessage = function( event ) {
       if (event.data[0] === "{") {
-        syncMe(event);
+        syncMe(event.data);
       } else {
         if ( DEBUG === true ) {
           console.log("- pong: ", new Date().getTime());
         }
-        compensateLag(event);
+        compensateLag(event.data);
       }
     }
   }
@@ -203,26 +223,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   video.onclick = function() {
-    if ( video.paused === true ) {
-      video.play();
-    }
-    else {
-      video.pause();
-    }
+    toggleVideoPlayPause();
   }
 
 
   document.body.onkeyup = function(event) {
-    switch ( event.key.toUpperCase() ) {
-      case "F":
-        if ( document.activeElement.type !== "text" ) {
-          if ( video.webkitDisplayingFullscreen === false ) {
-            video.webkitRequestFullscreen();
-          }
-          else {
-            video.webkitExitFullscreen();
-          }
-        }
+    // Toggle fullscreen
+    if ( event.key.toUpperCase() === "F" ) {
+      toggleVideoFullscreen();
+    }
+
+    // Toggle video start/pause
+    if ( event.keyCode === 32 ) { // Space
+      toggleVideoPlayPause();
+    }
+
+
+    if ( DEBUG === true ) {
+      console.log("- document.body.onkeyup, event.keyCode: ", event.keyCode);
+      console.log("- document.body.onkeyup, event.key.toUpperCase(): ", event.key.toUpperCase());
     }
   }
 
@@ -230,7 +249,9 @@ document.addEventListener("DOMContentLoaded", function() {
   txtSource.onkeyup = function(event) {
     if ( event.keyCode === 13 ) {
       setSource();
-      syncRemote(txtSource.value);
+      syncRemote(
+        currentSrc = txtSource.value
+      );
       video.play();
     }
   }
@@ -238,7 +259,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
   btnSetSource.onclick = function() {
     setSource();
-    syncRemote(txtSource.value);
+    syncRemote(
+      currentSrc = txtSource.value
+    );
     video.play(); 
   }
 
