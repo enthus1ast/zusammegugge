@@ -66,7 +66,7 @@ let syncMe = function(event) {
 
     if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value ) {
       if ( chbxLagCompensation.checked === true ) {
-        video.currentSrc = data.currentTime + data.lag + lag;
+        video.currentSrc = data.currentTime + ( (data.lag + lag) / 1000 );
       }
       else {
         video.currentTime = data.currentTime;
