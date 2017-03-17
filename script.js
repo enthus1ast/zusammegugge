@@ -283,13 +283,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   btnToggleHistory.onclick = function() {
-    if ( [...divHistory.classList].includes("historyClosed") ) {
-      divHistory.classList.remove("historyClosed")
-      divHistory.classList.add("historyOpened");
+    if ( divHistory.dataset.openstate === "closed" ) {
+      divHistory.className = "historyOpened";
+      setTimeout(function() {
+        divHistory.style.left = "75vw";
+        divHistory.className = "";
+        divHistory.dataset.openstate = "opened";
+      }, 300);
     }
     else {
-      divHistory.classList.remove("historyOpened")
-      divHistory.classList.add("historyClosed");
+      divHistory.className = "historyClosed";
+      setTimeout(function() {
+        divHistory.style.left = "100vw";
+        divHistory.className = "";
+        divHistory.dataset.openstate = "closed";
+      }, 300);
     }
   }
 

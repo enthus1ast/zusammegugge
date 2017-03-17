@@ -74,6 +74,7 @@ video::-webkit-media-controls-timeline {
   top: 0;
   right: 0;
   bottom: 0;
+  left: 100vw;
   background-color: darkslategrey;
 }
 
@@ -84,7 +85,7 @@ video::-webkit-media-controls-timeline {
 }
 
 #tblHistory tbody tr td {
-    border-bottom: 1px solid #161618;
+  border-bottom: 1px solid #161618;
 }
 
 
