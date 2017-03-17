@@ -49,7 +49,7 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
 let syncMe = function(data) {
   if ( chbxNoMeSync.checked === false ) {
-    let data = JSON.parse(data);
+    data = JSON.parse(data);
 
     chbxVoice.checked = false;
 
