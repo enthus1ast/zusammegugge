@@ -60,10 +60,10 @@ video::-webkit-media-controls-timeline {
   vertical-align: middle;
 }
 
-#source {
+#txtSource {
   width: 400px;
 }
 
-#timedifference {
+#txtTimeDifference {
   width: 50px;
 }
