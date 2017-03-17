@@ -1,5 +1,4 @@
 const SYNC_INTERVAL = 5000;
-const TICK_SERVER_TIME_INTERVAL = 1000;
 const DEBUG = true;
 const HOST = "ws://" + location.hostname + ":7787/";
 
