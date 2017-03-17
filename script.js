@@ -6,6 +6,7 @@ const HOST = "ws://" + location.hostname + ":7787/";
 let video = null;
 let divHistory = null;
 let tblHistory = null;
+let btnToggleHistory = null;
 let txtSource = null;
 let chbxVoice = null;
 let chbxNoMeSync = null;
@@ -165,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function() {
   video = document.querySelector("#video");
   divHistory = document.querySelector("#divHistory");
   tblHistory = document.querySelector("#tblHistory");
+  btnToggleHistory = document.querySelector("#btnToggleHistory");
   txtSource = document.querySelector("#txtSource");
   chbxVoice = document.querySelector("#chbxVoice");
   chbxNoMeSync = document.querySelector("#chbxNoMeSync");
@@ -278,5 +280,18 @@ document.addEventListener("DOMContentLoaded", function() {
     );
     video.play(); 
   }
+
+
+  btnToggleHistory.onclick = function() {
+    if ( [...divHistory.classList].includes("historyClosed") ) {
+      divHistory.classList.remove("historyClosed")
+      divHistory.classList.add("historyOpened");
+    }
+    else {
+      divHistory.classList.remove("historyOpened")
+      divHistory.classList.add("historyClosed");
+    }
+  }
+
 
 });

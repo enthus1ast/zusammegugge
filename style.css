@@ -4,6 +4,7 @@ body {
   background-color: #161618;
   color: white;
   font-family: monospace;
+  overflow: hidden;
 }
 
 button {
@@ -73,8 +74,7 @@ video::-webkit-media-controls-timeline {
   top: 0;
   right: 0;
   bottom: 0;
-  left: 75vw;
-  background-color: green;
+  background-color: darkslategrey;
 }
 
 #tblHistory {
@@ -85,4 +85,35 @@ video::-webkit-media-controls-timeline {
 
 #tblHistory tbody tr td {
     border-bottom: 1px solid #161618;
+}
+
+
+#btnToggleHistory {
+  margin: 0;
+  padding: 0;
+  margin-left: -45px;
+  padding-left: 2px;
+  padding-right: 2px;
+  border: 0;
+  background-color: darkslategrey;
+}
+
+
+.historyOpened {
+  animation: toggleHistory 0.3s ease-out;
+  animation-fill-mode: forwards;
+}
+
+.historyClosed {
+  animation: toggleHistory 0.3s ease-out reverse;
+  animation-fill-mode: forwards;
+}
+
+@keyframes toggleHistory {
+  from {
+    left: 100vw;
+  }
+  to {
+    left: 75vw;
+  }
 }
