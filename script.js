@@ -4,15 +4,17 @@ const DEBUG = true;
 const HOST = "ws://" + location.hostname + ":7787/";
 
 let video = null;
-let voice = false;
-let nomesync = false;
-let timedifference = false;
-let lagcompensation = false;
+let txtSource = null;
+let chbxVoice = null;
+let chbxNoMeSync = null;
+let btnSetSource = null;
+let txtTimeDifference = null;
+let chbxLagCompensation = null;
 
 
 let client = new WebSocket(HOST, "irc");
-let lagcompensationvalue = 0;
-let lagcompensationqueue = [];
+let lag = 0;
+let lagQueue = [];
 
 
 
@@ -24,7 +26,7 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
   seeking = seeking || video.seeking;
   hardsync = hardsync || false;
 
-  if ( voice.checked === true ) {
+  if ( chbxVoice.checked === true ) {
 
     let data = JSON.stringify({
       currentSrc: currentSrc,
@@ -33,7 +35,7 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
       ended: ended,
       seeking: seeking,
       hardsync: hardsync,
-      lag: lagcompensationvalue
+      lag: lag
     });
 
     client.send(data); 
@@ -44,10 +46,10 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
 
 let syncMe = function(event) {
-  if ( nomesync.checked === false ) {
+  if ( chbxNoMeSync.checked === false ) {
     let data = JSON.parse(event.data);
 
-    voice.checked = false;
+    chbxVoice.checked = false;
 
     if ( video.src !== data.currentSrc ) {
       video.src = data.currentSrc;
@@ -62,9 +64,9 @@ let syncMe = function(event) {
       }
     }
 
-    if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= timedifference.value ) {
-      if ( lagcompensation.checked === true ) {
-        video.currentSrc = data.currentTime + data.lag + lagcompensationvalue;
+    if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value ) {
+      if ( chbxLagCompensation.checked === true ) {
+        video.currentSrc = data.currentTime + data.lag + lag;
       }
       else {
         video.currentTime = data.currentTime;
@@ -95,9 +97,9 @@ let ping = function() {
   }
 }
 
-let lagCompensation = function(event) {
-  if ( lagcompensationqueue.length <= 10 ) {
-    lagcompensationqueue.push({"sent": event.data, "got": new Date().getTime()});
+let compensateLag = function(event) {
+  if ( lagQueue.length <= 10 ) {
+    lagQueue.push({"sent": event.data, "got": new Date().getTime()});
    
     if ( DEBUG === true ) {
       console.log("- lagCompensation, pushedDifference (DEBUG): ~", new Date().getTime() - event.data);
@@ -105,40 +107,40 @@ let lagCompensation = function(event) {
   }
   else {
     let sum = 0;
-    for ( let key in Object.keys(lagcompensationqueue) ) {
-      let entry = lagcompensationqueue[key];
+    for ( let key in Object.keys(lagQueue) ) {
+      let entry = lagQueue[key];
       sum += entry.got - entry.sent;
 
       if ( DEBUG === true ) {
         console.log("- lagCompensation, calculated sum (DEBUG): ~", sum);
       }
     }
-    lagcompensationvalue = sum / lagcompensationqueue.length;
-    lagcompensationqueue = [];
+    lag = sum / lagQueue.length;
+    lagQueue = [];
 
     if ( DEBUG === true ) {
-      console.log("- lagCompensation, set lagcompensationvalue (DEBUG): ~", lagcompensationvalue);
+      console.log("- lagCompensation, set lag (DEBUG): ~", lag);
     }
   }
 }
 
 
 let setSource = function() {
-  video.src = source.value;
+  video.src = txtSource.value;
 }
 
 
 
 document.addEventListener("DOMContentLoaded", function() {
   video = document.querySelector("#video");
-  source = document.querySelector("#source");
-  voice = document.querySelector("#voice");
-  nomesync = document.querySelector("#nomesync");
-  set = document.querySelector("#set");
-  timedifference = document.querySelector("#timedifference");
-  lagcompensation = document.querySelector("#lagcompensation");
+  txtSource = document.querySelector("#txtSource");
+  chbxVoice = document.querySelector("#chbxVoice");
+  chbxNoMeSync = document.querySelector("#chbxNoMeSync");
+  btnSetSource = document.querySelector("#btnSetSource");
+  txtTimeDifference = document.querySelector("#txtTimeDifference");
+  chbxLagCompensation = document.querySelector("#chbxLagCompensation");
 
-  video.src = source.value;
+  video.src = txtSource.value;
 
 
   let syncInterval = setInterval(function() {
@@ -158,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if ( DEBUG === true ) {
           console.log("- pong: ", new Date().getTime());
         }
-        lagCompensation(event);
+        compensateLag(event);
       }
     }
   }
@@ -225,18 +227,18 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  source.onkeyup = function(event) {
+  txtSource.onkeyup = function(event) {
     if ( event.keyCode === 13 ) {
       setSource();
-      syncRemote(source.value);
+      syncRemote(txtSource.value);
       video.play();
     }
   }
 
 
-  set.onclick = function() {
+  btnSetSource.onclick = function() {
     setSource();
-    syncRemote(source.value);
+    syncRemote(txtSource.value);
     video.play(); 
   }
 
