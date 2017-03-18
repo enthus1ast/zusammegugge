@@ -1,0 +1,4 @@
+- [ ] Take over control (when voice leader fall in sleep)
+- [X] Hide cursor and video controls after 3 seconds if over video
+- [ ] Set lag compenstation checked per default
+- [ ] Set playing video speed

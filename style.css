@@ -99,6 +99,9 @@ video::-webkit-media-controls-timeline {
   background-color: darkslategrey;
 }
 
+.cursor-none {
+  cursor: none;
+}
 
 .historyOpened {
   animation: toggleHistory 0.3s ease-out;

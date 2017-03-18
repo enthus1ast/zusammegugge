@@ -245,6 +245,41 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
+  let hndlVideoMouseMove = null;
+  video.onmousemove = function(event) {
+
+    video.style.cursor = "";
+
+    if ( video.hasAttribute("controls") === false ) {
+      video.setAttribute("controls", "controls");
+    }
+  
+    if ( hndlVideoMouseMove !== null ) {
+      clearTimeout(hndlVideoMouseMove);
+    }
+
+    hndlVideoMouseMove = setTimeout(function() {
+      if ( video.paused === true ) {
+        return;
+      }
+
+      video.style.cursor = "none";
+
+      if ( video.hasAttribute("controls") === true ) {
+        video.removeAttribute("controls");
+      }
+
+    }, 1000);
+  }
+
+  video.onmouseout = function(event) {
+    if ( hndlVideoMouseMove !== null ) {
+      clearTimeout(hndlVideoMouseMove);
+    }
+  }
+
+
+
   document.body.onkeyup = function(event) {
     // Toggle fullscreen
     if ( event.key.toUpperCase() === "F" ) {
