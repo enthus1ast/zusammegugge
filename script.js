@@ -67,11 +67,14 @@ let syncMe = function(data) {
       }
     }
 
-    if ( data.seeking === true || data.hardsync === true || Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value ) {
+    
+    if (
+      data.seeking === true ||
+      data.hardsync === true ||
+      Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value
+    ) {
       if ( chbxLagCompensation.checked === true ) {
-        let serverTimestamp = null;
-
-        serverTimestamp += new Date().getTime() + timestampDiff;
+        let serverTimestamp = new Date().getTime() + timestampDiff;
 
         video.currentTime = data.currentTime + ( (serverTimestamp - data.timestamp) / 1000 );
       }
