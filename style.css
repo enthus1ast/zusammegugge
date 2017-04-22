@@ -8,11 +8,15 @@ body {
 }
 
 button {
-  border: none;
-  border-right: 1px solid gray;
+  border: 1px solid #333333;
+  vertical-align: middle;
   background: black;
-  color: white;	
-  line-height: 20px;
+  color: white; 
+  line-height: 19px;
+  font-size: 12px;
+  padding-top: 1px;
+  padding-bottom: 0px;
+
 }
 
 input[type="text"] {
@@ -111,6 +115,10 @@ video::-webkit-media-controls-timeline {
 .historyClosed {
   animation: toggleHistory 0.3s ease-out reverse;
   animation-fill-mode: forwards;
+}
+
+.row {
+  height: 24px;
 }
 
 @keyframes toggleHistory {
