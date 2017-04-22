@@ -11,11 +11,9 @@ let chbxVoice = null;
 let chbxNoMeSync = null;
 let btnSetSource = null;
 let txtTimeDifference = null;
-let chbxLagCompensation = null;
 
 
 let client = new WebSocket(HOST, "irc");
-let timestampDiff = null;
 
 
 let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, hardsync ) {
@@ -28,8 +26,6 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
 
   if ( chbxVoice.checked === true ) {
 
-    let timestamp = new Date().getTime() + timestampDiff;
-
     let data = JSON.stringify({
       currentSrc: currentSrc,
       currentTime: currentTime,
@@ -37,7 +33,6 @@ let syncRemote = function ( currentSrc, currentTime, paused, ended, seeking, har
       ended: ended,
       seeking: seeking,
       hardsync: hardsync,
-      timestamp: timestamp
     });
 
     client.send(data); 
@@ -73,14 +68,7 @@ let syncMe = function(data) {
       data.hardsync === true ||
       Math.abs(video.currentTime - data.currentTime) >= txtTimeDifference.value
     ) {
-      if ( chbxLagCompensation.checked === true ) {
-        let serverTimestamp = new Date().getTime() + timestampDiff;
-
-        video.currentTime = data.currentTime + ( (serverTimestamp - data.timestamp) / 1000 );
-      }
-      else {
-        video.currentTime = data.currentTime;
-      }
+      video.currentTime = data.currentTime;
 
       if ( DEBUG === true ) {
         console.log("- syncMe (DEBUG): hardsynced!")
@@ -96,39 +84,6 @@ let syncMe = function(data) {
   }
 
   return;
-}
-
-
-let ping = function() {
-  client.send(new Date().getTime());
-
-  if ( DEBUG === true ) {
-    console.log("- ping (DEBUG): ~", new Date().getTime());
-  }
-}
-
-let setTimestampDiff = function(data) {
-  let latency = new Date().getTime(),
-      clientTimestamp = parseInt(data.split("|")[0], 10),
-      serverTimestamp = parseInt(data.split("|")[1], 10);
-
-  latency -= clientTimestamp;
-
-  if ( clientTimestamp > serverTimestamp ) {
-    timestampDiff = (serverTimestamp + latency / 2) - (clientTimestamp - latency / 2);
-  }
-  else {
-    timestampDiff = (clientTimestamp + latency / 2) - (serverTimestamp - latency / 2);
-    timestampDiff *= -1;
-  }
-
-  if ( DEBUG === true ) {
-    console.log("- setTimestampDiff, clientTimestamp: ", clientTimestamp);
-    console.log("- setTimestampDiff, latency: ", latency);
-    console.log("- setTimestampDiff, serverTimestamp: ", serverTimestamp);
-    console.log("- setTimestampDiff, timestampDiff: ", timestampDiff);
-  }
-
 }
 
 
@@ -176,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function() {
   chbxNoMeSync = document.querySelector("#chbxNoMeSync");
   btnSetSource = document.querySelector("#btnSetSource");
   txtTimeDifference = document.querySelector("#txtTimeDifference");
-  chbxLagCompensation = document.querySelector("#chbxLagCompensation");
 
   video.src = txtSource.value;
 
@@ -184,8 +138,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   client.onopen = function(event) {
-    ping();
-    
     let syncInterval = setInterval(function() {
       syncRemote();
     }, SYNC_INTERVAL);
@@ -194,7 +146,6 @@ document.addEventListener("DOMContentLoaded", function() {
       if (event.data[0] === "{") {
         syncMe(event.data);
       } else {
-        setTimestampDiff(event.data);
         if ( DEBUG === true ) {
           console.log("- pong (DEBUG): ", new Date().getTime());
           console.log("- pong, data (DEBUG): ", event.data);
